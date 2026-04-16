@@ -41,7 +41,7 @@ The VGT Chronos Engine is an uncompromising countdown system for WordPress, engi
 
 ## ⚡2. CORE ARCHITECTURE & PERFORMANCE
 
-2.1 Rendering & Physics Engine
+### 2.1 Rendering & Physics Engine
 
 60FPS Render Loop: Client-side animations exclusively utilize requestAnimationFrame for hardware acceleration. Complete avoidance of I/O-blocking setInterval routines for the tick cycle.
 
@@ -51,7 +51,7 @@ Zero-Runtime Overhead: Styles are processed as dynamic inline CSS via wp_add_inl
 
 Evergreen Persistence: Local state persistence for persistent evergreen timers via localStorage (vgt_chronos_{id}_start).
 
-2.2 Security KERNEL (Defense-in-Depth)
+### 2.2 Security KERNEL (Defense-in-Depth)
 
 Strict Whitelisting: All UI parameters (Themes, Actions, Types) are validated server-side against constant arrays (in_array(..., ..., true)).
 
