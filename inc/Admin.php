@@ -10,6 +10,7 @@ if (!defined('ABSPATH')) {
 // STATUS: DIAMANT VGT SUPREME
 // ARCHITEKTUR: Isoliertes DOM, reaktive Hydration.
 // SECURITY: Strict Whitelisting, Nonce-Validation, Defense-in-Depth Sanitization.
+// FIX: HTML5 Silent-Abort Paradoxon eliminiert. UX Redirect Flow optimiert.
 
 final class Admin
 {
@@ -60,10 +61,18 @@ final class Admin
         $animation = in_array($_POST['animation'] ?? '', self::ALLOWED_ANIMATIONS, true) ? $_POST['animation'] : 'none';
         $language = in_array($_POST['language'] ?? '', self::ALLOWED_LANGUAGES, true) ? $_POST['language'] : 'de';
 
-        // Strikte Validierung des ISO 8601 Formats (YYYY-MM-DDTHH:MM)
-        $end_datetime = sanitize_text_field($_POST['end_datetime'] ?? '');
-        if (!empty($end_datetime) && !preg_match('/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/', $end_datetime)) {
-            $end_datetime = '';
+        // VGT KERNEL: Absolute Daten-Isolation basierend auf dem aktiven State
+        $end_datetime = '';
+        if ($type === 'fixed') {
+            $end_datetime = sanitize_text_field($_POST['end_datetime'] ?? '');
+            if (!empty($end_datetime) && !preg_match('/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/', $end_datetime)) {
+                $end_datetime = '';
+            }
+        }
+
+        $duration_seconds = 0;
+        if ($type === 'evergreen') {
+            $duration_seconds = isset($_POST['duration_minutes']) ? absint($_POST['duration_minutes']) * 60 : 0;
         }
 
         $data = [
@@ -71,9 +80,9 @@ final class Admin
             'title' => sanitize_text_field($_POST['title'] ?? 'Untitled Matrix'),
             'type' => $type,
             'end_datetime' => $end_datetime,
-            'duration_seconds' => isset($_POST['duration_minutes']) ? absint($_POST['duration_minutes']) * 60 : 0,
+            'duration_seconds' => $duration_seconds,
             'action_on_expire' => $action,
-            'redirect_url' => esc_url_raw($_POST['redirect_url'] ?? ''),
+            'redirect_url' => esc_url_raw($_POST['redirect_url'] ?? ''), // Serverseitige Filterung ist dem Browser überlegen
             'design_settings' => [
                 'color_primary' => sanitize_hex_color($_POST['color_primary'] ?? '') ?: '#00ffcc',
                 'color_bg' => sanitize_hex_color($_POST['color_bg'] ?? '') ?: '#111111',
@@ -84,8 +93,11 @@ final class Admin
             ]
         ];
 
-        Database::save_countdown($data);
-        wp_redirect(admin_url('admin.php?page=vgt-chronos&status=saved'));
+        // System speichert und gibt die ID zurück (selbst bei Updates 0 affected rows)
+        $saved_id = Database::save_countdown($data);
+        
+        // VGT UX FIX: Wir halten den Nutzer in der Bearbeitungs-Session, anstatt ihn rauszuwerfen
+        wp_redirect(admin_url('admin.php?page=vgt-chronos&edit_id=' . $saved_id . '&status=saved'));
         exit;
     }
 
@@ -116,10 +128,15 @@ final class Admin
         
         // Hydration Logic mit Defense-in-Depth Fallbacks
         $settings = $edit_data ? json_decode($edit_data['design_settings'], true) : [];
+        if (!is_array($settings)) $settings = []; // JSON Crash-Protection
+
         $title = $edit_data ? esc_attr($edit_data['title']) : '';
         $type = $edit_data ? esc_attr($edit_data['type']) : 'fixed';
         $end_datetime = $edit_data ? esc_attr($edit_data['end_datetime'] ?? '') : '';
-        $duration_minutes = $edit_data ? absint($edit_data['duration_seconds'] / 60) : '';
+        
+        // VGT FIX: Vermeidung der HTML5 `min="1"` Blockade durch explizite Null-Wert Löschung
+        $duration_minutes = ($edit_data && !empty($edit_data['duration_seconds'])) ? absint($edit_data['duration_seconds'] / 60) : '';
+        
         $action_on_expire = $edit_data ? esc_attr($edit_data['action_on_expire']) : 'hide';
         $redirect_url = $edit_data ? esc_url($edit_data['redirect_url']) : '';
         
@@ -144,13 +161,27 @@ final class Admin
                 <div class="vgt-sys-status">SYS.STATE: <span class="vgt-glow-text">OPTIMAL</span></div>
             </header>
 
+            <?php if (isset($_GET['status']) && $_GET['status'] === 'saved'): ?>
+                <div style="background: rgba(0, 255, 204, 0.05); border: 1px solid var(--vgt-primary); color: var(--vgt-primary); padding: 1rem 1.5rem; border-radius: 8px; margin-bottom: 2rem; font-weight: 600; letter-spacing: 1px; text-transform: uppercase; display: flex; align-items: center; gap: 10px; box-shadow: 0 0 15px var(--vgt-primary-glow);">
+                    <span style="display:inline-block; width:8px; height:8px; background:var(--vgt-primary); border-radius:50%; box-shadow:0 0 10px var(--vgt-primary);"></span>
+                    SYSTEM OVERRIDE SUCCESSFUL: MATRIX SYNCHRONIZED TO DATABASE.
+                </div>
+            <?php endif; ?>
+            
+            <?php if (isset($_GET['status']) && $_GET['status'] === 'purged'): ?>
+                 <div style="background: rgba(255, 0, 68, 0.05); border: 1px solid #ff0044; color: #ff0044; padding: 1rem 1.5rem; border-radius: 8px; margin-bottom: 2rem; font-weight: 600; letter-spacing: 1px; text-transform: uppercase; display: flex; align-items: center; gap: 10px; box-shadow: 0 0 15px rgba(255, 0, 68, 0.2);">
+                    <span style="display:inline-block; width:8px; height:8px; background:#ff0044; border-radius:50%; box-shadow:0 0 10px #ff0044;"></span>
+                    MATRIX PURGE COMPLETE: DATA ERADICATED.
+                </div>
+            <?php endif; ?>
+
             <main class="vgt-grid">
                 <!-- LEFT COLUMN: Creator -->
                 <div class="vgt-col-left">
                     <section class="vgt-panel vgt-form-panel vgt-glass">
                         <h2><?php echo $edit_data ? 'Update Matrix Configuration' : 'Matrix Configuration'; ?></h2>
                         <?php if ($edit_data): ?>
-                            <a href="<?php echo esc_url(admin_url('admin.php?page=vgt-chronos')); ?>" class="vgt-btn-cancel">CANCEL OVERRIDE</a>
+                            <a href="<?php echo esc_url(admin_url('admin.php?page=vgt-chronos')); ?>" class="vgt-btn-cancel">CANCEL OVERRIDE (CREATE NEW)</a>
                         <?php endif; ?>
                         
                         <form action="<?php echo esc_url(admin_url('admin-post.php')); ?>" method="POST" class="vgt-form" id="vgt-creator-form">
@@ -252,7 +283,8 @@ final class Admin
                                 </div>
                                 <div class="vgt-form-group" id="vgt-redirect-wrapper" style="display: <?php echo $action_on_expire === 'redirect' ? 'block' : 'none'; ?>;">
                                     <label>Target URL (Redirect)</label>
-                                    <input type="url" name="redirect_url" id="vgt-redirect-url" value="<?php echo $redirect_url; ?>" placeholder="https://visiongaiatechnology.com/offer">
+                                    <!-- VGT FIX: type="url" zu type="text" geändert, um Silent HTML5 Aborts bei unsichtbaren Feldern zu verhindern -->
+                                    <input type="text" name="redirect_url" id="vgt-redirect-url" value="<?php echo $redirect_url; ?>" placeholder="https://visiongaiatechnology.com/offer">
                                 </div>
                             </div>
 
