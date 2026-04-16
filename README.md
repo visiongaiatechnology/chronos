@@ -1,3 +1,5 @@
+# VGT CHRONOS BETA 1.0 
+
 [![License](https://img.shields.io/badge/License-AGPLv3-green?style=for-the-badge)](LICENSE)
 [![Version](https://img.shields.io/badge/Version-1.1_BETA-brightgreen?style=for-the-badge)](#)
 [![Target](https://img.shields.io/badge/Target-Wordpress-FCC624?style=for-the-badge&logo=Wordpress)](#)
