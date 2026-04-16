@@ -1,4 +1,4 @@
-# VGT CHRONOS BETA 1.0 
+# VGT CHRONOS BETA 1.1 
 
 [![License](https://img.shields.io/badge/License-AGPLv3-green?style=for-the-badge)](LICENSE)
 [![Version](https://img.shields.io/badge/Version-1.1_BETA-brightgreen?style=for-the-badge)](#)
@@ -9,7 +9,7 @@
 # ⚠️ EXPERIMENTAL R&D PROJECT
 
 This project is a **Proof of Concept (PoC)** and part of ongoing research and development at
-VisionGaia Technology. It is **not** a certified or production-ready product.
+VisionGaiaTechnology. It is **not** a certified or production-ready product.
 
 **Use at your own risk.** The software may contain security vulnerabilities, bugs, or
 unexpected behavior. It may break your environment if misconfigured or used improperly.
