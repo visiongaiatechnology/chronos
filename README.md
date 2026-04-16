@@ -24,6 +24,13 @@ Found a vulnerability or have an improvement? **Open an issue or contact us.**
 
 The VGT Chronos Engine is an uncompromising countdown system for WordPress, engineered for extreme performance and security. Moving away from the overhead of traditional page-builder modules, Chronos is based on a native Vanilla-JS physics engine (60FPS Render Loop) and isolated backend instances.
 
+
+<img width="1724" height="878" alt="{185DC291-D873-4469-8745-801682F2DDA0}" src="https://github.com/user-attachments/assets/13645832-db1f-4d51-a690-14ac80141706" />
+
+
+
+
+
 | Specification | Parameter |
 | --- | --- |
 | Minimum PHP Version | 8.1 (Enforces strict_types=1) |
@@ -121,7 +128,7 @@ Tick Simulation: An isolated tick interval in the admin area visualizes animatio
 
 | Tool | Type | Purpose |
 |---|---|---|
-| ⚔️ **[VGT Sentinel](https://github.com/visiongaiatechnology/sentinelcom)** | **WAF / IDS Framework** | Zero-Trust WordPress security suite — you are here |
+| ⚔️ **[VGT Sentinel](https://github.com/visiongaiatechnology/sentinelcom)** | **WAF / IDS Framework** | Zero-Trust WordPress security suite  |
 | 🛡️ **[VGT Myrmidon](https://github.com/visiongaiatechnology/vgtmyrmidon)** | **ZTNA** | Zero Trust device registry and cryptographic integrity verification |
 | ⚡ **[VGT Auto-Punisher](https://github.com/visiongaiatechnology/vgt-auto-punisher)** | **IDS** | L4+L7 Hybrid IDS — attackers terminated before they even knock |
 | 📊 **[VGT Dattrack](https://github.com/visiongaiatechnology/dattrack)** | **Analytics** | Sovereign analytics engine — your data, your server, no third parties |
